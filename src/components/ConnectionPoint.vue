@@ -95,12 +95,7 @@ export default {
       this.relmousepos.x = this.relmidpoint.x + (x - this.midpoint.x);
       this.relmousepos.y = this.relmidpoint.y + (y - this.midpoint.y);
     },
-    showPath() {
-      this.showPath_ = true;
-    },
-    hidePath() {
-      this.showPath_ = false;
-    },
+    createNode() {},
     mousedown(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -116,9 +111,9 @@ export default {
       }
       document.addEventListener("mousemove", dragTo);
 
-      let hidePath = this.hidePath;
+      let createNode = this.createNode;
       function removeMouseDownEventListeners() {
-        hidePath();
+        createNode();
         document.removeEventListener("mousemove", dragTo);
         document.removeEventListener("mouseup", removeMouseDownEventListeners);
       }

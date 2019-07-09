@@ -5,6 +5,7 @@
       <div v-show="enable_description" class="description" @click="focusDescription">
         <textarea
           v-model="description"
+          :class="{ 'has-content': description }"
           :id="id"
           name="description"
           cols="30"
@@ -169,16 +170,25 @@ export default {
         font-family: "Roboto", sans-serif;
         font-weight: normal;
         font-size: 15px;
+        border: none;
         border: dashed 3px rgba(255, 255, 255, 0.6);
-        transition: border ease 100ms;
+        transition: border-color ease 100ms;
         padding: 0.7em;
         animation: grow-to-textarea ease 0.4s forwards;
         width: 100%;
         box-sizing: border-box;
 
+        &.has-content {
+          border-color: rgba(255, 255, 255, 0);
+
+          &:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+          }
+        }
+
         &:focus {
           outline: none;
-          border: dashed 3px rgba(255, 255, 255, 0.8);
+          border-color: rgba(255, 255, 255, 0.8) !important;
         }
       }
     }
@@ -188,6 +198,10 @@ export default {
       background: transparent;
       border: dashed 3px rgba(255, 255, 255, 0.6);
       width: 100%;
+      height: 25px;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
 
       &.shrink-back {
         animation: shrink-to-button ease 0.4s forwards;
@@ -197,23 +211,23 @@ export default {
         opacity: 0.6;
       }
     }
+  }
+}
 
-    @keyframes grow-to-textarea {
-      from {
-        height: 25px;
-      }
-      to {
-        height: 100px;
-      }
-    }
-    @keyframes shrink-to-button {
-      from {
-        height: 100px;
-      }
-      to {
-        height: auto;
-      }
-    }
+@keyframes grow-to-textarea {
+  from {
+    height: 25px;
+  }
+  to {
+    height: 100px;
+  }
+}
+@keyframes shrink-to-button {
+  from {
+    height: 100px;
+  }
+  to {
+    height: 25px;
   }
 }
 </style>
