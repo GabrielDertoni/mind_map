@@ -21,7 +21,7 @@
         <img src="../assets/plus.svg" />
       </div>
     </div>
-    <ConnectionPoint></ConnectionPoint>
+    <ConnectionPoint :id="id + '-connection'"></ConnectionPoint>
   </Draggable>
 </template>
 <script>

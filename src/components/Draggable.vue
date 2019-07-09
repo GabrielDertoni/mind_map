@@ -63,10 +63,6 @@ export default {
         document.removeEventListener("mousemove", dragTo);
         document.removeEventListener("mouseup", removeMouseDownEventListeners);
         document.body.style.cursor = "default";
-        this.$emit("position-change", {
-          x: this.x,
-          y: this.y
-        });
       }
       document.addEventListener("mouseup", removeMouseDownEventListeners);
     }
