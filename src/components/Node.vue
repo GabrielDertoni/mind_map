@@ -32,17 +32,7 @@
       :id="identifier + '-connection-point'"
       v-slot="slotProps"
       @mouse-released="createConnection"
-    >
-      <Connection
-        v-for="child in children"
-        :startPos="slotProps.relmidpoint"
-        :endPos="{
-          x: child.inputPosition.x + slotProps.relmidpoint.x - connectionPosition.x,
-          y: child.inputPosition.y + slotProps.relmidpoint.y - connectionPosition.y
-        }"
-        :key="child.id"
-      ></Connection>
-    </ConnectionPoint>
+    ></ConnectionPoint>
   </Draggable>
 </template>
 <script>

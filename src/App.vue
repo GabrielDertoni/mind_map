@@ -1,13 +1,13 @@
 <template>
   <div id="app">
-    <!-- <div v-for="node in nodes" :key="node.id + '_connections'">
+    <div v-for="node in nodes" :key="node.id + '_connections'">
       <Connection
         v-for="childID in node.children"
-        :startPos="calculateOutputPosition(node.position)"
-        :endPos="calculateInputPosition(getNodeById(childID).position)"
+        :startPos="calculateOutputPosition(node)"
+        :endPos="calculateInputPosition(getNodeById(childID))"
         :key="node.id + '-connection-' + childID"
       ></Connection>
-    </div>-->
+    </div>
     <Node
       v-for="node in nodes"
       :identifier="node.id"
@@ -43,6 +43,18 @@ export default {
     })
   },
   methods: {
+    calculateInputPosition(node) {
+      return {
+        x: node.position.x + node.width / 2,
+        y: node.position.y + node.height / 2
+      };
+    },
+    calculateOutputPosition(node) {
+      return {
+        x: node.position.x + node.width / 2,
+        y: node.position.y + node.height + 6
+      };
+    },
     getNodeConnectionPoint(id) {
       let boundingRect = document.getElementById(id).getBoundingClientRect();
       return {
