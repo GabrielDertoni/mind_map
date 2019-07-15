@@ -15,6 +15,10 @@ export default {
       required: true
     }
   },
+  mounted() {
+    this.update(this.startPos);
+    this.update(this.endPos);
+  },
   data() {
     return {
       margin: 10

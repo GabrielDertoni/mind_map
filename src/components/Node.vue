@@ -1,12 +1,12 @@
 <template>
-  <Draggable class="node" @position-change="handlePositionChange">
+  <Draggable class="node" :startX="startX" :startY="startY" @position-change="handlePositionChange">
     <div class="inner-container" :style="color_style">
       <h2>{{ title }}</h2>
       <div v-show="enable_description" class="description" @click="focusDescription">
         <textarea
           v-model="description"
           :class="{ 'has-content': description }"
-          :id="id"
+          :id="identifier"
           name="description"
           cols="30"
           rows="10"
@@ -22,13 +22,31 @@
         <img src="../assets/plus.svg" />
       </div>
     </div>
-    <ConnectionPoint :id="id + '-connection'"></ConnectionPoint>
+    <ConnectionPoint
+      :id="identifier + '-connection-point'"
+      v-slot="slotProps"
+      @mouse-released="createConnection"
+    >
+      <!-- <Connection
+        v-for="child in children"
+        :startPos="slotProps.relmidpoint"
+        :endPos="{
+          x: child.position.x + slotProps.relmidpoint.x - slotProps.midpoint.x,
+          y: child.position.y + slotProps.relmidpoint.y - slotProps.midpoint.y
+        }"
+        :key="child.id"
+      ></Connection>-->
+    </ConnectionPoint>
   </Draggable>
 </template>
 <script>
 import { setTimeout } from "timers";
+import { mapGetters } from "vuex";
+// import { mapMutations } from "vuex";
+
 import Draggable from "./Draggable.vue";
 import ConnectionPoint from "./ConnectionPoint.vue";
+// import Connection from "./Connection.vue";
 
 export default {
   name: "Node",
@@ -37,7 +55,7 @@ export default {
     ConnectionPoint
   },
   props: {
-    id: String,
+    identifier: String,
     startX: {
       type: Number,
       required: false,
@@ -49,6 +67,12 @@ export default {
       default: null
     }
   },
+  mounted() {
+    // this.$store.subscribe((mutation, state) => {
+    //   if (mutation === "change-node-position") {
+    //   }
+    // });
+  },
   data() {
     return {
       // Possible colors: red, green, blue, cian, magenta, yellow, brown, orange
@@ -56,14 +80,8 @@ export default {
       color: "red",
       enable_description: false,
       shrink_to_button: false,
-      description: "",
-      x: 0,
-      y: 0
+      description: ""
     };
-  },
-  mounted() {
-    this.x = this.$el.getBoundingClientRect().left;
-    this.y = this.$el.getBoundingClientRect().top;
   },
   computed: {
     color_style() {
@@ -105,12 +123,40 @@ export default {
             "background-color": "hsl(0, 50%, 50%)"
           };
       }
-    }
+    },
+    position: {
+      get() {
+        // return this.getNodeById(this.identifier).position;
+        return this.getNodes[this.identifier].position;
+      },
+      set(newPosition) {
+        // Change the position in the vuex store.
+        this.$store.commit("change-node-position", {
+          id: this.identifier,
+          position: newPosition
+        });
+      }
+    },
+    children() {
+      const childrenIDs = this.getNodes[this.identifier].children;
+      let children = [];
+      for (let id of childrenIDs) {
+        children.push({
+          id: id,
+          position: this.getNodes[id].position
+        });
+      }
+      return children;
+    },
+    ...mapGetters(["getNodes", "getNodeById"])
   },
   methods: {
+    /**
+     * Called when the 'position-change' is emited by Draggable component.
+     * This event is emited whenever the mouse is relesed after a drag.
+     */
     handlePositionChange(newpos) {
-      this.x = newpos.x;
-      this.y = newpos.y;
+      this.position = newpos;
     },
     addDescription() {
       this.enable_description = true;
@@ -129,6 +175,27 @@ export default {
         this.enable_description = false;
         this.shrink_to_button = true;
       }
+    },
+    createConnection(position) {
+      let hoverNode = this.checkHoverNode(position);
+      if (hoverNode) {
+        this.$store.commit("create-connection", {
+          from: hoverNode,
+          to: this.identifier
+        });
+        return;
+      }
+      this.$store.commit("create-node", position);
+      this.$store.commit("create-connection", {
+        from: -1,
+        to: this.identifier
+      });
+    },
+    checkHoverNode(position) {
+      let elements = document.elementsFromPoint(position.x, position.y);
+      let nodeElement = elements.find(els => els.id.includes("node-"));
+      if (!nodeElement) return null;
+      return nodeElement.id.replace("node-", "");
     }
   }
 };

@@ -24,6 +24,8 @@ export default {
       this.x = window.innerWidth / 2 - boundingRect.width / 2;
     if (this.startY === null)
       this.y = window.innerHeight / 2 - boundingRect.height / 2;
+
+    this.$emit("position-change", { x: this.x, y: this.y });
   },
   data() {
     return {
@@ -47,24 +49,46 @@ export default {
       this.y = y - this.offy;
     },
     mousedown(e) {
+      let boundingRect = this.$el.getBoundingClientRect();
+      // If mousedown is outside of the bounding rect, ignore it.
+      if (
+        e.pageX < boundingRect.x ||
+        e.pageX > boundingRect.x + boundingRect.width ||
+        e.pageY < boundingRect.y ||
+        e.pageY > boundingRect.y + boundingRect.height
+      ) {
+        return;
+      }
+
       e.preventDefault();
-      this.offx = e.clientX - this.$el.getBoundingClientRect().left;
-      this.offy = e.clientY - this.$el.getBoundingClientRect().top;
+
+      this.offx = e.clientX - boundingRect.left;
+      this.offy = e.clientY - boundingRect.top;
 
       document.body.style.cursor = "move";
 
-      let moveTo = this.moveTo;
       function dragTo(e) {
-        moveTo(e.pageX, e.pageY);
+        this.moveTo(e.pageX, e.pageY);
       }
-      document.addEventListener("mousemove", dragTo);
+      // document.addEventListener("mousemove", dragTo.bind(this));
+      document.onmousemove = dragTo.bind(this);
 
       function removeMouseDownEventListeners() {
-        document.removeEventListener("mousemove", dragTo);
-        document.removeEventListener("mouseup", removeMouseDownEventListeners);
+        // document.removeEventListener("mousemove", dragTo.bind(this));
+        // document.removeEventListener(
+        //   "mouseup",
+        //   removeMouseDownEventListeners.bind(this)
+        // );
+        document.onmousemove = null;
+        document.onmouseup = null;
         document.body.style.cursor = "default";
+        this.$emit("position-change", { x: this.x, y: this.y });
       }
-      document.addEventListener("mouseup", removeMouseDownEventListeners);
+      // document.addEventListener(
+      //   "mouseup",
+      //   removeMouseDownEventListeners.bind(this)
+      // );
+      document.onmouseup = removeMouseDownEventListeners.bind(this);
     }
   }
 };

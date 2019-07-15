@@ -1,9 +1,10 @@
 <template>
-  <div class="connection-point" @mousedown="mousedown">
-    <div class="ball-container">
+  <div class="connection-point">
+    <div class="ball-container" @mousedown="mousedown">
       <div class="ball"></div>
     </div>
     <Connection :startPos="relmidpoint" :endPos="relmousepos"></Connection>
+    <slot :relmidpoint="relmidpoint" :midpoint="midpoint"></slot>
   </div>
 </template>
 
@@ -17,6 +18,10 @@ export default {
   },
   props: {
     id: String
+  },
+  mounted() {
+    this.recalculate_midpoint();
+    this.updateMouseTo(this.midpoint.x, this.midpoint.y);
   },
   data() {
     return {
@@ -92,10 +97,14 @@ export default {
       this.midpoint.y = boundingRect.y + boundingRect.height / 2;
     },
     updateMouseTo(x, y) {
+      this.mousepos.x = x;
+      this.mousepos.y = y;
       this.relmousepos.x = this.relmidpoint.x + (x - this.midpoint.x);
       this.relmousepos.y = this.relmidpoint.y + (y - this.midpoint.y);
     },
-    createNode() {},
+    mouseReleased() {
+      this.$emit("mouse-released", this.mousepos);
+    },
     mousedown(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -111,9 +120,11 @@ export default {
       }
       document.addEventListener("mousemove", dragTo);
 
-      let createNode = this.createNode;
+      let mouseReleased = this.mouseReleased;
+      let midpoint = this.midpoint;
       function removeMouseDownEventListeners() {
-        createNode();
+        mouseReleased();
+        updateMouseTo(midpoint.x, midpoint.y);
         document.removeEventListener("mousemove", dragTo);
         document.removeEventListener("mouseup", removeMouseDownEventListeners);
       }
