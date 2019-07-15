@@ -1,5 +1,11 @@
 <template>
-  <Draggable class="node" :startX="startX" :startY="startY" @position-change="handlePositionChange">
+  <Draggable
+    class="node"
+    :startX="startX"
+    :startY="startY"
+    @position-changing="handlePositionChanging"
+    @position-changed="handlePositionChanged"
+  >
     <div class="inner-container" :style="color_style">
       <h2>{{ title }}</h2>
       <div v-show="enable_description" class="description" @click="focusDescription">
@@ -27,15 +33,15 @@
       v-slot="slotProps"
       @mouse-released="createConnection"
     >
-      <!-- <Connection
+      <Connection
         v-for="child in children"
         :startPos="slotProps.relmidpoint"
         :endPos="{
-          x: child.position.x + slotProps.relmidpoint.x - slotProps.midpoint.x,
-          y: child.position.y + slotProps.relmidpoint.y - slotProps.midpoint.y
+          x: child.position.x + slotProps.relmidpoint.x - instConnectionPos.x,
+          y: child.position.y + slotProps.relmidpoint.y - instConnectionPos.y
         }"
         :key="child.id"
-      ></Connection>-->
+      ></Connection>
     </ConnectionPoint>
   </Draggable>
 </template>
@@ -46,13 +52,14 @@ import { mapGetters } from "vuex";
 
 import Draggable from "./Draggable.vue";
 import ConnectionPoint from "./ConnectionPoint.vue";
-// import Connection from "./Connection.vue";
+import Connection from "./Connection.vue";
 
 export default {
   name: "Node",
   components: {
     Draggable,
-    ConnectionPoint
+    ConnectionPoint,
+    Connection
   },
   props: {
     identifier: String,
@@ -65,13 +72,20 @@ export default {
       type: Number,
       required: false,
       default: null
+    },
+    startWidth: {
+      type: Number,
+      required: false,
+      default: null
+    },
+    startHeight: {
+      type: Number,
+      required: false,
+      default: null
     }
   },
   mounted() {
-    // this.$store.subscribe((mutation, state) => {
-    //   if (mutation === "change-node-position") {
-    //   }
-    // });
+    this.updateInstConnectionPos(this.position);
   },
   data() {
     return {
@@ -80,7 +94,11 @@ export default {
       color: "red",
       enable_description: false,
       shrink_to_button: false,
-      description: ""
+      description: "",
+      instConnectionPos: {
+        x: 0,
+        y: 0
+      }
     };
   },
   computed: {
@@ -135,15 +153,18 @@ export default {
           id: this.identifier,
           position: newPosition
         });
+        this.updateInstConnectionPos(newPosition);
       }
     },
     children() {
-      const childrenIDs = this.getNodes[this.identifier].children;
+      // const nodes = this.getNodes;
+      // const childrenIDs = nodes.find(arr => arr.id === this.identifier)
+      const childrenIDs = this.getNodeById(this.identifier).children;
       let children = [];
       for (let id of childrenIDs) {
         children.push({
           id: id,
-          position: this.getNodes[id].position
+          position: this.getNodeById(id).position
         });
       }
       return children;
@@ -151,12 +172,23 @@ export default {
     ...mapGetters(["getNodes", "getNodeById"])
   },
   methods: {
+    updateInstConnectionPos(newpos) {
+      let boundingRect = this.$el.getBoundingClientRect();
+      this.instConnectionPos = {
+        x: newpos.x + boundingRect.width / 2,
+        y: newpos.y + boundingRect.height - 6
+      };
+    },
     /**
      * Called when the 'position-change' is emited by Draggable component.
      * This event is emited whenever the mouse is relesed after a drag.
      */
-    handlePositionChange(newpos) {
+    handlePositionChanged(newpos) {
       this.position = newpos;
+    },
+    handlePositionChanging(newpos) {
+      // this.position = newpos;
+      this.updateInstConnectionPos(newpos);
     },
     addDescription() {
       this.enable_description = true;
@@ -178,17 +210,17 @@ export default {
     },
     createConnection(position) {
       let hoverNode = this.checkHoverNode(position);
-      if (hoverNode) {
+      if (hoverNode && hoverNode != this.identifier) {
         this.$store.commit("create-connection", {
-          from: hoverNode,
-          to: this.identifier
+          from: this.identifier,
+          to: hoverNode
         });
         return;
       }
       this.$store.commit("create-node", position);
       this.$store.commit("create-connection", {
-        from: -1,
-        to: this.identifier
+        from: this.identifier,
+        to: -1
       });
     },
     checkHoverNode(position) {

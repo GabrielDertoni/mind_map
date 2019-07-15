@@ -114,20 +114,17 @@ export default {
 
       // set this.updateMouseTo() to a temporary variable so that it can be accessed from
       // within the dragTo() function
-      let updateMouseTo = this.updateMouseTo;
-      function dragTo(e) {
-        updateMouseTo(e.pageX, e.pageY);
-      }
+      let dragTo = (e => {
+        this.updateMouseTo(e.pageX, e.pageY);
+      }).bind(this);
       document.addEventListener("mousemove", dragTo);
 
-      let mouseReleased = this.mouseReleased;
-      let midpoint = this.midpoint;
-      function removeMouseDownEventListeners() {
-        mouseReleased();
-        updateMouseTo(midpoint.x, midpoint.y);
+      let removeMouseDownEventListeners = (() => {
+        this.mouseReleased();
+        this.updateMouseTo(this.midpoint.x, this.midpoint.y);
         document.removeEventListener("mousemove", dragTo);
         document.removeEventListener("mouseup", removeMouseDownEventListeners);
-      }
+      }).bind(this);
       document.addEventListener("mouseup", removeMouseDownEventListeners);
     }
   }

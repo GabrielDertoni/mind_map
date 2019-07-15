@@ -25,7 +25,7 @@ export default {
     if (this.startY === null)
       this.y = window.innerHeight / 2 - boundingRect.height / 2;
 
-    this.$emit("position-change", { x: this.x, y: this.y });
+    this.$emit("position-changed", { x: this.x, y: this.y });
   },
   data() {
     return {
@@ -47,6 +47,7 @@ export default {
     moveTo(x, y) {
       this.x = x - this.offx;
       this.y = y - this.offy;
+      this.$emit("position-changing", { x: this.x, y: this.y });
     },
     mousedown(e) {
       let boundingRect = this.$el.getBoundingClientRect();
@@ -67,28 +68,18 @@ export default {
 
       document.body.style.cursor = "move";
 
-      function dragTo(e) {
+      let dragTo = (e => {
         this.moveTo(e.pageX, e.pageY);
-      }
-      // document.addEventListener("mousemove", dragTo.bind(this));
-      document.onmousemove = dragTo.bind(this);
+      }).bind(this);
+      document.addEventListener("mousemove", dragTo);
 
-      function removeMouseDownEventListeners() {
-        // document.removeEventListener("mousemove", dragTo.bind(this));
-        // document.removeEventListener(
-        //   "mouseup",
-        //   removeMouseDownEventListeners.bind(this)
-        // );
-        document.onmousemove = null;
-        document.onmouseup = null;
+      let removeMouseDownEventListeners = (() => {
+        document.removeEventListener("mousemove", dragTo);
+        document.removeEventListener("mouseup", removeMouseDownEventListeners);
         document.body.style.cursor = "default";
-        this.$emit("position-change", { x: this.x, y: this.y });
-      }
-      // document.addEventListener(
-      //   "mouseup",
-      //   removeMouseDownEventListeners.bind(this)
-      // );
-      document.onmouseup = removeMouseDownEventListeners.bind(this);
+        this.$emit("position-changed", { x: this.x, y: this.y });
+      }).bind(this);
+      document.addEventListener("mouseup", removeMouseDownEventListeners);
     }
   }
 };

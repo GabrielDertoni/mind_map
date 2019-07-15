@@ -12,13 +12,18 @@ export default new Vuex.Store({
           x: null,
           y: null
         },
+        width: null,
+        height: null,
         children: []
       }
     ]
   },
   getters: {
     getNodes: state => state.nodes,
-    getNodeById: state => id => state.nodes.find(nodes => nodes.id === id)
+    /**
+     * Untraceable. If the state is updated the get wont be.
+     */
+    getNodeById: (state, getters) => id => getters.getNodes.find(nodes => nodes.id === id)
   },
   mutations: {
     'change-node-position': (state, payload) => {
@@ -36,9 +41,15 @@ export default new Vuex.Store({
       });
     },
     'create-connection': (state, payload) => {
-      let idx = payload.from;
-      if (idx < 0) idx = state.nodes.length + idx;
-      state.nodes[idx].children.push(payload.to);
+      let { from, to } = payload;
+
+      // Turn from into an index and if it is -1
+      if (typeof from === "number" && from < 0) from = state.nodes.length + from;
+      else from = state.nodes.findIndex(arr => arr.id === from);
+
+      if (typeof to === "number" && to < 0) to = state.nodes[state.nodes.length + to].id;
+
+      state.nodes[from].children.push(to);
     }
   },
   actions: {

@@ -1,18 +1,20 @@
 <template>
   <div id="app">
-    <div v-for="node in nodes" :key="node.id + '_connections'">
+    <!-- <div v-for="node in nodes" :key="node.id + '_connections'">
       <Connection
         v-for="childID in node.children"
         :startPos="node.position"
         :endPos="getNodeById(childID).position"
         :key="node.id + '-connection-' + childID"
       ></Connection>
-    </div>
+    </div>-->
     <Node
       v-for="node in nodes"
       :identifier="node.id"
       :startX="node.position.x"
       :startY="node.position.y"
+      :startWidth="node.width"
+      :startHeight="node.height"
       :key="node.id"
       :id="'node-' + node.id"
     ></Node>
