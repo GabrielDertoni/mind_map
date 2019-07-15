@@ -12,8 +12,8 @@ export default new Vuex.Store({
           x: null,
           y: null
         },
-        width: null,
-        height: null,
+        width: 320,
+        height: 100,
         children: []
       }
     ]
@@ -37,6 +37,8 @@ export default new Vuex.Store({
           x: position.x,
           y: position.y
         },
+        width: 320,
+        height: 100,
         children: []
       });
     },

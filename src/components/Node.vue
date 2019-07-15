@@ -1,10 +1,10 @@
 <template>
   <Draggable
     class="node"
-    :startX="startX"
-    :startY="startY"
+    :startX="x"
+    :startY="y"
     @position-changing="handlePositionChanging"
-    @position-changed="handlePositionChanged"
+    @position-changed="handlePositionChanging"
   >
     <div class="inner-container" :style="color_style">
       <h2>{{ title }}</h2>
@@ -37,8 +37,8 @@
         v-for="child in children"
         :startPos="slotProps.relmidpoint"
         :endPos="{
-          x: child.position.x + slotProps.relmidpoint.x - instConnectionPos.x,
-          y: child.position.y + slotProps.relmidpoint.y - instConnectionPos.y
+          x: child.inputPosition.x + slotProps.relmidpoint.x - connectionPosition.x,
+          y: child.inputPosition.y + slotProps.relmidpoint.y - connectionPosition.y
         }"
         :key="child.id"
       ></Connection>
@@ -63,29 +63,30 @@ export default {
   },
   props: {
     identifier: String,
-    startX: {
+    x: {
       type: Number,
       required: false,
       default: null
     },
-    startY: {
+    y: {
       type: Number,
       required: false,
       default: null
     },
-    startWidth: {
+    width: {
       type: Number,
       required: false,
-      default: null
+      default: 310
     },
-    startHeight: {
+    height: {
       type: Number,
       required: false,
-      default: null
+      default: 100
     }
   },
   mounted() {
-    this.updateInstConnectionPos(this.position);
+    // if (this.width === null) this.width = 310;
+    // if (this.height === null) this.height = 100;
   },
   data() {
     return {
@@ -142,32 +143,28 @@ export default {
           };
       }
     },
-    position: {
-      get() {
-        // return this.getNodeById(this.identifier).position;
-        return this.getNodes[this.identifier].position;
-      },
-      set(newPosition) {
-        // Change the position in the vuex store.
-        this.$store.commit("change-node-position", {
-          id: this.identifier,
-          position: newPosition
-        });
-        this.updateInstConnectionPos(newPosition);
-      }
-    },
     children() {
       // const nodes = this.getNodes;
       // const childrenIDs = nodes.find(arr => arr.id === this.identifier)
       const childrenIDs = this.getNodeById(this.identifier).children;
       let children = [];
       for (let id of childrenIDs) {
+        let child = this.getNodeById(id);
         children.push({
-          id: id,
-          position: this.getNodeById(id).position
+          ...child,
+          inputPosition: {
+            x: child.position.x + child.width / 2,
+            y: child.position.y + child.height / 2
+          }
         });
       }
       return children;
+    },
+    connectionPosition() {
+      return {
+        x: this.x + this.width / 2,
+        y: this.y + this.height + 6
+      };
     },
     ...mapGetters(["getNodes", "getNodeById"])
   },
@@ -179,16 +176,11 @@ export default {
         y: newpos.y + boundingRect.height - 6
       };
     },
-    /**
-     * Called when the 'position-change' is emited by Draggable component.
-     * This event is emited whenever the mouse is relesed after a drag.
-     */
-    handlePositionChanged(newpos) {
-      this.position = newpos;
-    },
     handlePositionChanging(newpos) {
-      // this.position = newpos;
-      this.updateInstConnectionPos(newpos);
+      this.$store.commit("change-node-position", {
+        id: this.identifier,
+        position: newpos
+      });
     },
     addDescription() {
       this.enable_description = true;

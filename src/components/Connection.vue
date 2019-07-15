@@ -115,8 +115,8 @@ export default {
       );
     },
     drawConnection(ctx, p1, p2, c1, c2) {
-      ctx.fillStyle = "#000000";
-      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#808080";
+      ctx.lineWidth = 3;
       // Reset the current path
       ctx.beginPath();
       // Staring point (x1, y1)
