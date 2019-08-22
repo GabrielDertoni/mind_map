@@ -75,13 +75,17 @@ export default {
     }
   },
   mounted() {
-    // if (this.width === null) this.width = 310;
-    // if (this.height === null) this.height = 100;
+    const thisNode = this.getNodeById(this.identifier);
+    this.title = thisNode.title ? thisNode.title : "Nova ideia";
+    this.color = thisNode.color ? thisNode.color : "red";
+    this.description = thisNode.description ? thisNode.description : "";
+
+    this.enable_description = this.description ? true : false;
   },
   data() {
     return {
       // Possible colors: red, green, blue, cian, magenta, yellow, brown, orange
-      title: "Nova ideia",
+      title: "",
       color: "red",
       enable_description: false,
       shrink_to_button: false,
@@ -185,6 +189,10 @@ export default {
       textarea.focus();
     },
     blurDescription() {
+      this.$store.commit("change-node-description", {
+        id: this.identifier,
+        description: this.description
+      });
       if (!this.description) {
         this.enable_description = false;
         this.shrink_to_button = true;

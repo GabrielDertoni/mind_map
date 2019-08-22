@@ -1,70 +1,8 @@
 <template>
   <div id="app">
-    <div v-for="node in nodes" :key="node.id + '_connections'">
-      <Connection
-        v-for="childID in node.children"
-        :startPos="calculateOutputPosition(node)"
-        :endPos="calculateInputPosition(getNodeById(childID))"
-        :key="node.id + '-connection-' + childID"
-      ></Connection>
-    </div>
-    <Node
-      v-for="node in nodes"
-      :identifier="node.id"
-      :x="node.position.x"
-      :y="node.position.y"
-      :width="node.width"
-      :height="node.height"
-      :key="node.id"
-      :id="'node-' + node.id"
-    ></Node>
+    <router-view />
   </div>
 </template>
-
-<script>
-import { mapGetters } from "vuex";
-
-import Node from "./components/Node.vue";
-import Connection from "./components/Connection.vue";
-
-export default {
-  name: "app",
-  components: {
-    Node,
-    Connection
-  },
-  data() {
-    return {};
-  },
-  computed: {
-    ...mapGetters({
-      nodes: "getNodes",
-      getNodeById: "getNodeById"
-    })
-  },
-  methods: {
-    calculateInputPosition(node) {
-      return {
-        x: node.position.x + node.width / 2,
-        y: node.position.y + node.height / 2
-      };
-    },
-    calculateOutputPosition(node) {
-      return {
-        x: node.position.x + node.width / 2,
-        y: node.position.y + node.height + 6
-      };
-    },
-    getNodeConnectionPoint(id) {
-      let boundingRect = document.getElementById(id).getBoundingClientRect();
-      return {
-        x: boundingRect.x + boundingRect.width / 2,
-        y: boundingRect.y + boundingRect.height - 6
-      };
-    }
-  }
-};
-</script>
 
 <style lang="scss">
 #app {
